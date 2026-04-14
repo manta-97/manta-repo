@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# Extract branch prefix like TASK-1, VOC-31 from branch name
+# e.g., task-1-test-for-what → TASK-1
+# e.g., voc-31-what → VOC-31
+# e.g., feature-auth → skip (no number pattern)
+
+BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+if [ -z "$BRANCH_NAME" ]; then
+  exit 0
+fi
+
+# Match pattern: word-number (e.g., task-1, voc-31, bug-42)
+PREFIX=$(echo "$BRANCH_NAME" | grep -oE '^[a-zA-Z]+-[0-9]+' | tr '[:lower:]' '[:upper:]')
+
+if [ -z "$PREFIX" ]; then
+  exit 0
+fi
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Skip if already prefixed (e.g., amend or merge commits)
+if echo "$COMMIT_MSG" | grep -qE "^$PREFIX "; then
+  exit 0
+fi
+
+# Skip merge commits
+if echo "$COMMIT_MSG" | grep -qE "^Merge "; then
+  exit 0
+fi
+
+echo "$PREFIX $COMMIT_MSG" > "$COMMIT_MSG_FILE"
