@@ -11,5 +11,4 @@ const program = new Command()
 
 program.addCommand(createInitCommand());
 
-// argv를 파싱해서 매칭되는 커맨드의 action을 실행.
 program.parse();
