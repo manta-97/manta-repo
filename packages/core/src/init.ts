@@ -21,16 +21,6 @@ export function resolveTaskDirPath(inputPath: string | undefined, cwd: string): 
   return path.resolve(cwd, inputPath);
 }
 
-/**
- * 경로의 마지막 segment만 반환한다.
- *
- * @param taskDirPath - task 디렉토리 절대 경로
- * @returns 디렉토리 이름만. e.g. `'/home/user/my-tasks'` → `'my-tasks'`
- */
-export function getTaskDirName(taskDirPath: string): string {
-  return path.basename(taskDirPath);
-}
-
 export async function initializeMantaProject(
   projectRoot: string,
   taskDirPath: string,
@@ -66,7 +56,7 @@ export async function initializeMantaProject(
     await registerProject(globalDataDir, {
       name: path.basename(projectRoot),
       projectRoot,
-      taskDirName: getTaskDirName(taskDirPath),  // TODO:7 basename() 함수를 바로 안쓰는 이유는?
+      taskDirName: path.basename(taskDirPath),
       // toISOString() → '2026-04-11T12:34:56.789Z', slice(0,10) → '2026-04-11'
       registeredAt: new Date().toISOString().slice(0, 10),
     });

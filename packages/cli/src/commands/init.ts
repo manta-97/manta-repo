@@ -15,7 +15,7 @@ export function createInitCommand(): Command {
     .description('Initialize a Manta project in the current directory')
     .action(async (inputPath: string | undefined) => {
       const projectRoot = process.cwd();
-      const taskDirPath = resolveTaskDirPath(inputPath, projectRoot); // TODO:7 결국 이 둘 인자 순서 바꿔서 사용하는데 여기서도 바꿔스 쓰면 별로인가?
+      const taskDirPath = resolveTaskDirPath(inputPath, projectRoot);
       const globalDataDir = getMantaDataDir();
 
       const result = await initializeMantaProject(projectRoot, taskDirPath, globalDataDir);

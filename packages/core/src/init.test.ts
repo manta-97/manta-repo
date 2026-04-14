@@ -1,7 +1,7 @@
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
-import { resolveTaskDirPath, getTaskDirName, initializeMantaProject } from './init';
+import { resolveTaskDirPath, initializeMantaProject } from './init';
 import { readProjectRegistry } from './project-registry';
 
 describe('resolveTaskDirPath', () => {
@@ -18,12 +18,6 @@ describe('resolveTaskDirPath', () => {
   it('should return absolute input path as-is', () => {
     const result = resolveTaskDirPath('/tmp/my-manta', '/home/user/project');
     expect(result).toBe('/tmp/my-manta');
-  });
-});
-
-describe('getTaskDirName', () => {
-  it('should return the last segment of the path', () => {
-    expect(getTaskDirName('/home/user/project/my-tasks')).toBe('my-tasks');
   });
 });
 
