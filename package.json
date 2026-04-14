@@ -10,14 +10,26 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint packages/*/src/",
-    "format": "prettier --write packages/*/src/"
+    "format": "prettier --write packages/*/src/",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "packages/*/src/**/*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "packages/*/src/**/*.{json,md}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@types/jest": "^30.0.0",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
     "jest": "^30.3.0",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.8.1",
     "ts-jest": "^29.4.9",
     "typescript-eslint": "^8.58.1"
