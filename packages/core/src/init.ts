@@ -2,10 +2,7 @@ import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 import { InitResult } from './types';
 import { registerProject } from './project-registry';
-
-const MANTA_MARKER_DIR = '.manta';
-const TASKS_DIR = 'tasks';
-const DEFAULT_TASK_DIR_NAME = 'manta';
+import { MANTA_MARKER_DIR, TASKS_DIR, DEFAULT_TASK_DIR_NAME } from './constants';
 
 /**
  * 사용자 입력 경로를 절대 경로로 변환한다.

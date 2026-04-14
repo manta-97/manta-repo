@@ -10,5 +10,5 @@ export interface ProjectEntry {
   name: string;
   projectRoot: string;
   taskDirName: string;
-  registeredAt: string; // TODO:7 registeredAt 을 string 일지 date 일지 고민
+  registeredAt: string;
 }
