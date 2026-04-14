@@ -81,7 +81,7 @@ describe('registerProject', () => {
     expect(result[0].taskDirName).toBe('my-tasks');
   });
 
-  it('should create dataDir if it does not exist', async () => {
+  it('should create globalDataDir if it does not exist', async () => {
     const nestedDir = path.join(tmpDir, 'nested', 'data');
     const entry: ProjectEntry = {
       name: 'my-app',

@@ -2,7 +2,7 @@ export type InitResult =
   | { ok: true; projectRoot: string; taskDirPath: string; created: boolean }
   | {
       ok: false;
-      error: 'PATH_IS_FILE' | 'ALREADY_INITIALIZED' | 'PERMISSION_DENIED' | 'UNKNOWNl';
+      error: 'PATH_IS_FILE' | 'ALREADY_INITIALIZED' | 'PERMISSION_DENIED' | 'UNKNOWN';
       message: string;
     };
 
