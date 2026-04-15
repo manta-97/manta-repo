@@ -20,6 +20,12 @@ describe('readProjectRegistry', () => {
     expect(result).toEqual([]);
   });
 
+  it('should throw error when projects.json contains invalid JSON', async () => {
+    await fs.writeFile(path.join(tmpDir, 'projects.json'), '{ broken json');
+
+    await expect(readProjectRegistry(tmpDir)).rejects.toThrow(SyntaxError);
+  });
+
   it('should return projects from existing projects.json', async () => {
     const projects: ProjectEntry[] = [
       {

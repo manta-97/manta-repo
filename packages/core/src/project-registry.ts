@@ -20,8 +20,11 @@ export async function readProjectRegistry(globalDataDir: string): Promise<Projec
   try {
     const content = await fs.readFile(filePath, 'utf-8');
     return JSON.parse(content) as ProjectEntry[];
-  } catch {
-    return [];
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return [];
+    }
+    throw error;
   }
 }
 
