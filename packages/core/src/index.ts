@@ -5,3 +5,5 @@ export { findMantaRoot } from './find-manta-root';
 export { getMantaDataDir } from './global-paths';
 export { readProjectRegistry, registerProject } from './project-registry';
 export type { InitResult, ProjectEntry } from './types';
+export { MantaErrors } from './errors';
+export type { MantaErrorCode } from './errors';
