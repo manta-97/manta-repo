@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 import { InitResult } from './types';
+import { MantaErrors } from './errors';
 import { registerProject } from './project-registry';
 import { MANTA_MARKER_DIR, TASKS_DIR, DEFAULT_TASK_DIR_NAME } from './constants';
 
@@ -29,28 +30,16 @@ export async function initializeMantaProject(
     const markerExists = await fs.stat(markerDir).catch(() => null);
 
     if (markerExists !== null && markerExists.isDirectory()) {
-      return {
-        ok: false,
-        error: 'ALREADY_INITIALIZED',
-        message: `Already initialized at ${projectRoot}`,
-      };
+      return { ok: false, ...MantaErrors.ALREADY_INITIALIZED(projectRoot) };
     }
 
     if (markerExists !== null && !markerExists.isDirectory()) {
-      return {
-        ok: false,
-        error: 'PATH_IS_FILE',
-        message: `Path already exists and is not a directory: ${markerDir}`,
-      };
+      return { ok: false, ...MantaErrors.PATH_IS_FILE(markerDir) };
     }
 
     const taskDirStat = await fs.stat(taskDirPath).catch(() => null);
     if (taskDirStat !== null && !taskDirStat.isDirectory()) {
-      return {
-        ok: false,
-        error: 'PATH_IS_FILE',
-        message: `Path already exists and is not a directory: ${taskDirPath}`,
-      };
+      return { ok: false, ...MantaErrors.PATH_IS_FILE(taskDirPath) };
     }
 
     await fs.mkdir(markerDir, { recursive: true });
@@ -70,11 +59,7 @@ export async function initializeMantaProject(
   } catch (error) {
     // EACCES — 디렉토리 생성 권한이 없는 경우.
     if (error instanceof Error && 'code' in error && error.code === 'EACCES') {
-      return {
-        ok: false,
-        error: 'PERMISSION_DENIED',
-        message: `Permission denied: ${projectRoot}`,
-      };
+      return { ok: false, ...MantaErrors.PERMISSION_DENIED(projectRoot) };
     }
     return {
       ok: false,

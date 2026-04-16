@@ -1,10 +1,8 @@
+import { MantaErrorCode } from './errors';
+
 export type InitResult =
   | { ok: true; projectRoot: string; taskDirPath: string; created: boolean }
-  | {
-      ok: false;
-      error: 'PATH_IS_FILE' | 'ALREADY_INITIALIZED' | 'PERMISSION_DENIED' | 'UNKNOWN';
-      message: string;
-    };
+  | { ok: false; error: MantaErrorCode | 'UNKNOWN'; message: string };
 
 export interface ProjectEntry {
   name: string;
