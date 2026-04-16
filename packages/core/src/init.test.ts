@@ -83,6 +83,19 @@ describe('initializeMantaProject', () => {
     });
   });
 
+  it('should return PATH_IS_FILE when .manta path is an existing file', async () => {
+    const markerPath = path.join(projectRoot, '.manta');
+    await fs.writeFile(markerPath, 'not a directory');
+    const taskDirPath = path.join(projectRoot, 'manta');
+    const result = await initializeMantaProject(projectRoot, taskDirPath, globalDataDir);
+
+    expect(result).toEqual({
+      ok: false,
+      error: 'PATH_IS_FILE',
+      message: `Path already exists and is not a directory: ${markerPath}`,
+    });
+  });
+
   it('should return PATH_IS_FILE when task dir path is an existing file', async () => {
     const filePath = path.join(projectRoot, 'manta');
     await fs.writeFile(filePath, 'hello');

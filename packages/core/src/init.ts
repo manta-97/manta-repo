@@ -36,6 +36,14 @@ export async function initializeMantaProject(
       };
     }
 
+    if (markerExists !== null && !markerExists.isDirectory()) {
+      return {
+        ok: false,
+        error: 'PATH_IS_FILE',
+        message: `Path already exists and is not a directory: ${markerDir}`,
+      };
+    }
+
     const taskDirStat = await fs.stat(taskDirPath).catch(() => null);
     if (taskDirStat !== null && !taskDirStat.isDirectory()) {
       return {
