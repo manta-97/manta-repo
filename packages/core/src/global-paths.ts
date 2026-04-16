@@ -2,11 +2,17 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 
 /**
- * macOS 전역 데이터 디렉토리 경로를 반환한다.
- * CLI와 Electron 앱이 같은 경로를 바라보기 위해 하드코딩.
+ * 전역 데이터 디렉토리 경로를 반환한다.
+ * 현재 macOS만 지원. 다른 OS에서는 에러를 던진다.
  *
- * @returns `~/Library/Application Support/manta`
+ * @returns macOS: `~/Library/Application Support/manta`
  */
 export function getMantaDataDir(): string {
+  const platform = os.platform();
+
+  if (platform !== 'darwin') {
+    throw new Error(`Unsupported platform: ${platform}. Currently only macOS is supported.`);
+  }
+
   return path.join(os.homedir(), 'Library', 'Application Support', 'manta');
 }
