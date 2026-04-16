@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace packages/core && npm run build --workspace packages/cli && npm run build --workspace packages/desktop",
+    "build": "npm run build --workspace packages/core && npm run build --workspace packages/cli",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint packages/*/src/",
