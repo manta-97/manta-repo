@@ -1,0 +1,97 @@
+import chalk from 'chalk';
+import { HELP_JSON_VERSION } from '../types';
+import { CommandHelpEntry, CommandJson, OverviewJson } from './types';
+
+const INDENT = '  ';
+const MIN_NAME_COLUMN_WIDTH = 14;
+
+function nameColumnWidth(names: readonly string[]): number {
+  const longest = names.reduce((max, name) => Math.max(max, name.length), 0);
+  return Math.max(MIN_NAME_COLUMN_WIDTH, longest + 2);
+}
+
+function renderTwoColumn(rows: readonly { name: string; description: string }[]): string {
+  const width = nameColumnWidth(rows.map((row) => row.name));
+  return rows.map((row) => `${INDENT}${row.name.padEnd(width, ' ')}${row.description}`).join('\n');
+}
+
+// Commander의 writeOut은 console.log와 달리 trailing newline을 붙이지 않는다.
+// `manta <cmd> --help`(writeOut 경로)가 `manta help <cmd>`(console.log 경로)와
+// 바이트 단위로 동일하도록, Commander의 formatHelp 훅에서 이 래퍼를 통과시킨다.
+export function formatForCommanderHook(rendered: string): string {
+  return rendered + '\n';
+}
+
+export function renderOverview(entries: readonly CommandHelpEntry[]): string {
+  const lines: string[] = [];
+
+  lines.push(chalk.bold('Manta') + ' — File-based task management for humans and AI');
+  lines.push('');
+  lines.push(chalk.bold('USAGE'));
+  lines.push(`${INDENT}manta <command> [args]`);
+  lines.push('');
+  lines.push(chalk.bold('COMMANDS'));
+  lines.push(
+    renderTwoColumn(entries.map((entry) => ({ name: entry.name, description: entry.summary }))),
+  );
+  lines.push('');
+  lines.push(chalk.dim('Run `manta help <command>` for details.'));
+  lines.push('');
+  lines.push(chalk.dim('Tasks live under <task-dir>/tasks/ (default: manta/tasks/).'));
+  lines.push(chalk.dim('Status model: todo → in-progress → done.'));
+
+  return lines.join('\n');
+}
+
+export function renderCommand(entry: CommandHelpEntry): string {
+  const lines: string[] = [];
+
+  lines.push(`${chalk.bold('manta ' + entry.name)} — ${entry.summary}`);
+  lines.push('');
+  lines.push(chalk.bold('USAGE'));
+  lines.push(`${INDENT}${entry.usage}`);
+
+  if (entry.args.length > 0) {
+    lines.push('');
+    lines.push(chalk.bold('ARGUMENTS'));
+    lines.push(
+      renderTwoColumn(entry.args.map((arg) => ({ name: arg.name, description: arg.description }))),
+    );
+  }
+
+  if (entry.options.length > 0) {
+    lines.push('');
+    lines.push(chalk.bold('OPTIONS'));
+    lines.push(
+      renderTwoColumn(
+        entry.options.map((option) => ({ name: option.flag, description: option.description })),
+      ),
+    );
+  }
+
+  if (entry.examples.length > 0) {
+    lines.push('');
+    lines.push(chalk.bold('EXAMPLES'));
+    for (const example of entry.examples) {
+      lines.push(`${INDENT}${chalk.dim('$')} ${example.input}`);
+    }
+  }
+
+  return lines.join('\n');
+}
+
+export function toOverviewJson(entries: readonly CommandHelpEntry[]): OverviewJson {
+  return {
+    kind: 'overview',
+    version: HELP_JSON_VERSION,
+    commands: entries.map((entry) => ({ ...entry })),
+  };
+}
+
+export function toCommandJson(entry: CommandHelpEntry): CommandJson {
+  return {
+    kind: 'command',
+    version: HELP_JSON_VERSION,
+    command: { ...entry },
+  };
+}
