@@ -1,3 +1,5 @@
+import type { HelpJsonVersion } from '../types';
+
 export interface CommandArg {
   name: string;
   required: boolean;
@@ -24,12 +26,12 @@ export interface CommandHelpEntry {
 
 export interface OverviewJson {
   kind: 'overview';
-  version: '1';
+  version: HelpJsonVersion;
   commands: CommandHelpEntry[];
 }
 
 export interface CommandJson {
   kind: 'command';
-  version: '1';
+  version: HelpJsonVersion;
   command: CommandHelpEntry;
 }

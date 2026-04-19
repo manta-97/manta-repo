@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { HELP_JSON_VERSION } from '../types';
 import { CommandHelpEntry, CommandJson, OverviewJson } from './types';
 
 const INDENT = '  ';
@@ -75,7 +76,7 @@ export function renderCommand(entry: CommandHelpEntry): string {
 export function toOverviewJson(entries: readonly CommandHelpEntry[]): OverviewJson {
   return {
     kind: 'overview',
-    version: '1', // TODO:10 version을 그냥 여기서 다루는건 아주 좋지 않다. packages/cli/src/help/types.ts:27 여기에도 동일한 문제
+    version: HELP_JSON_VERSION,
     commands: entries.map((entry) => ({ ...entry })),
   };
 }
@@ -83,7 +84,7 @@ export function toOverviewJson(entries: readonly CommandHelpEntry[]): OverviewJs
 export function toCommandJson(entry: CommandHelpEntry): CommandJson {
   return {
     kind: 'command',
-    version: '1',
+    version: HELP_JSON_VERSION,
     command: { ...entry },
   };
 }
