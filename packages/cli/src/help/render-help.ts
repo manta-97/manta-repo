@@ -15,6 +15,13 @@ function renderTwoColumn(rows: readonly { name: string; description: string }[])
   return rows.map((row) => `${INDENT}${row.name.padEnd(width, ' ')}${row.description}`).join('\n');
 }
 
+// Commander의 writeOut은 console.log와 달리 trailing newline을 붙이지 않는다.
+// `manta <cmd> --help`(writeOut 경로)가 `manta help <cmd>`(console.log 경로)와
+// 바이트 단위로 동일하도록, Commander의 formatHelp 훅에서 이 래퍼를 통과시킨다.
+export function formatForCommanderHook(rendered: string): string {
+  return rendered + '\n';
+}
+
 export function renderOverview(entries: readonly CommandHelpEntry[]): string {
   const lines: string[] = [];
 

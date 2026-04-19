@@ -79,6 +79,6 @@ describe('applyHelpEntryToCommand', () => {
     const command = new Command('demo');
     applyHelpEntryToCommand(command, entry);
 
-    expect(command.helpInformation()).toBe(renderCommand(entry));
+    expect(command.helpInformation()).toBe(renderCommand(entry) + '\n');
   });
 });

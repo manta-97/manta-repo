@@ -4,14 +4,14 @@ import { Command } from 'commander';
 import { VERSION } from '@manta/core';
 import { commandFactories } from './commands/command-factories';
 import { commandHelpEntries } from './help/command-registry';
-import { renderOverview } from './help/render-help';
+import { formatForCommanderHook, renderOverview } from './help/render-help';
 
 const program = new Command()
   .name('manta')
   .description('File-based task management for humans and AI')
   .version(VERSION)
   .configureHelp({
-    formatHelp: () => renderOverview(commandHelpEntries),
+    formatHelp: () => formatForCommanderHook(renderOverview(commandHelpEntries)),
   });
 
 for (const entry of commandHelpEntries) {

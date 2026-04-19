@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { CommandHelpEntry } from './types';
-import { renderCommand } from './render-help';
+import { formatForCommanderHook, renderCommand } from './render-help';
 
 export function applyHelpEntryToCommand(command: Command, entry: CommandHelpEntry): Command {
   command.description(entry.summary);
@@ -15,7 +15,7 @@ export function applyHelpEntryToCommand(command: Command, entry: CommandHelpEntr
   }
 
   command.configureHelp({
-    formatHelp: () => renderCommand(entry),
+    formatHelp: () => formatForCommanderHook(renderCommand(entry)),
   });
 
   return command;
