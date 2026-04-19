@@ -4,5 +4,6 @@
     "types": ["jest", "node"],
     "isolatedModules": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": []
 }
