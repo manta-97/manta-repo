@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { commandHelpEntries, findHelpEntry } from '../help/command-registry';
 import { applyHelpEntryToCommand } from '../help/apply-help-entry';
 import { renderCommand, renderOverview, toCommandJson, toOverviewJson } from '../help/render-help';
+import { createUnknownCommandError, writeCliError } from '../errors/cli-error-policy';
 
 export function createHelpCommand(): Command {
   const command = new Command('help');
@@ -20,10 +21,8 @@ export function createHelpCommand(): Command {
 
     const targetEntry = findHelpEntry(commandName);
     if (!targetEntry) {
-      console.error(
-        `Unknown command: ${commandName}. Run \`manta help\` to see available commands.`,
-      );
-      process.exitCode = 1;
+      // help 내부 unknown도 root unknown과 같은 error policy를 탄다.
+      writeCliError(createUnknownCommandError(commandName));
       return;
     }
 

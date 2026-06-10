@@ -3,6 +3,8 @@ import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import { resolveTaskDirPath, initializeMantaProject } from './init';
 import { readProjectRegistry } from './project-registry';
+import { readProjectAnchor } from './project-anchor';
+import { TASK_STATUSES } from './constants';
 
 describe('resolveTaskDirPath', () => {
   it('should return manta/ under cwd when no input path given', () => {
@@ -37,29 +39,56 @@ describe('initializeMantaProject', () => {
     await fs.rm(tmpDir, { recursive: true, force: true });
   });
 
-  it('should create .manta/ marker dir and manta/tasks/ dir', async () => {
+  it('should create .manta/ marker dir and the three status folders', async () => {
     const taskDirPath = path.join(projectRoot, 'manta');
     await initializeMantaProject(projectRoot, taskDirPath, globalDataDir);
 
     const markerStat = await fs.stat(path.join(projectRoot, '.manta'));
     expect(markerStat.isDirectory()).toBe(true);
 
-    const tasksStat = await fs.stat(path.join(taskDirPath, 'tasks'));
-    expect(tasksStat.isDirectory()).toBe(true);
+    for (const status of TASK_STATUSES) {
+      const statusDirStat = await fs.stat(path.join(taskDirPath, 'tasks', status));
+      expect(statusDirStat.isDirectory()).toBe(true);
+    }
   });
 
-  it('should register project in global projects.json', async () => {
+  it('should create an empty .gitkeep in each status folder', async () => {
     const taskDirPath = path.join(projectRoot, 'manta');
     await initializeMantaProject(projectRoot, taskDirPath, globalDataDir);
 
+    for (const status of TASK_STATUSES) {
+      const gitkeepStat = await fs.stat(path.join(taskDirPath, 'tasks', status, '.gitkeep'));
+      expect(gitkeepStat.isFile()).toBe(true);
+      expect(gitkeepStat.size).toBe(0);
+    }
+  });
+
+  it('should write project anchor with projectId and relative taskDir', async () => {
+    const taskDirPath = path.join(projectRoot, 'manta');
+    await initializeMantaProject(projectRoot, taskDirPath, globalDataDir);
+
+    const anchor = await readProjectAnchor(projectRoot);
+    expect(anchor).not.toBeNull();
+    expect(anchor!.projectId).toMatch(/^manta_proj_[0-9a-f]{12}$/);
+    expect(anchor!.schemaVersion).toBe(1);
+    expect(anchor!.taskDir).toBe('manta');
+    expect(anchor!.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it('should register project with the anchor projectId in global projects.json', async () => {
+    const taskDirPath = path.join(projectRoot, 'manta');
+    await initializeMantaProject(projectRoot, taskDirPath, globalDataDir);
+
+    const anchor = await readProjectAnchor(projectRoot);
     const projects = await readProjectRegistry(globalDataDir);
     expect(projects).toHaveLength(1);
+    expect(projects[0].projectId).toBe(anchor!.projectId);
     expect(projects[0].projectRoot).toBe(projectRoot);
     expect(projects[0].taskDirName).toBe('manta');
     expect(projects[0].name).toBe('my-project');
   });
 
-  it('should return ok with created:true when project is new', async () => {
+  it('should return ok with projectId and created:true when project is new', async () => {
     const taskDirPath = path.join(projectRoot, 'manta');
     const result = await initializeMantaProject(projectRoot, taskDirPath, globalDataDir);
 
@@ -67,6 +96,7 @@ describe('initializeMantaProject', () => {
       ok: true,
       projectRoot,
       taskDirPath,
+      projectId: expect.stringMatching(/^manta_proj_/),
       created: true,
     });
   });
@@ -108,12 +138,28 @@ describe('initializeMantaProject', () => {
     });
   });
 
+  it('should not overwrite an existing .gitkeep with content', async () => {
+    const taskDirPath = path.join(projectRoot, 'manta');
+    const todoDir = path.join(taskDirPath, 'tasks', 'todo');
+    await fs.mkdir(todoDir, { recursive: true });
+    const gitkeepPath = path.join(todoDir, '.gitkeep');
+    await fs.writeFile(gitkeepPath, 'user content');
+
+    await initializeMantaProject(projectRoot, taskDirPath, globalDataDir);
+
+    const gitkeepContent = await fs.readFile(gitkeepPath, 'utf-8');
+    expect(gitkeepContent).toBe('user content');
+  });
+
   it('should work with custom task dir name', async () => {
     const taskDirPath = path.join(projectRoot, 'my-tasks');
     await initializeMantaProject(projectRoot, taskDirPath, globalDataDir);
 
     const tasksStat = await fs.stat(path.join(taskDirPath, 'tasks'));
     expect(tasksStat.isDirectory()).toBe(true);
+
+    const anchor = await readProjectAnchor(projectRoot);
+    expect(anchor!.taskDir).toBe('my-tasks');
 
     const projects = await readProjectRegistry(globalDataDir);
     expect(projects[0].taskDirName).toBe('my-tasks');

@@ -8,7 +8,7 @@ const PROJECTS_FILE = 'projects.json';
  * `projects.json`을 읽어서 `ProjectEntry` 배열로 반환한다.
  * 파일이 없으면 빈 배열 — "아직 등록된 프로젝트 없음"으로 취급.
  *
- * @param globalDataDir - 전역 데이터 디렉토리 경로 (`~/Library/Application Support/manta`)
+ * @param globalDataDir - 전역 데이터 디렉토리 경로 (`~/.manta`)
  * @returns 등록된 프로젝트 목록. 파일이 없으면 빈 배열.
  *
  * @remarks
@@ -30,8 +30,9 @@ export async function readProjectRegistry(globalDataDir: string): Promise<Projec
 
 /**
  * 프로젝트를 `projects.json`에 등록한다. upsert 패턴을 사용:
- * - `projectRoot`가 같으면 기존 엔트리를 덮어쓴다.
- * - 없으면 새로 추가한다.
+ * - `projectId`가 같으면 기존 엔트리를 덮어쓴다 (폴더 이동 후 재등록 대응).
+ * - `projectRoot`가 같아도 덮어쓴다 (같은 위치에 재생성된 프로젝트).
+ * - 둘 다 없으면 새로 추가한다.
  *
  * @param globalDataDir - 전역 데이터 디렉토리 경로
  * @param entry - 등록할 프로젝트 정보
@@ -41,7 +42,9 @@ export async function readProjectRegistry(globalDataDir: string): Promise<Projec
  */
 export async function registerProject(globalDataDir: string, entry: ProjectEntry): Promise<void> {
   const projects = await readProjectRegistry(globalDataDir);
-  const existingIndex = projects.findIndex((p) => p.projectRoot === entry.projectRoot);
+  const existingIndex = projects.findIndex(
+    (p) => p.projectId === entry.projectId || p.projectRoot === entry.projectRoot,
+  );
 
   if (existingIndex >= 0) {
     projects[existingIndex] = entry;

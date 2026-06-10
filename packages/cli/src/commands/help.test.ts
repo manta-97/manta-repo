@@ -76,19 +76,27 @@ describe('createHelpCommand action', () => {
     expect(parsed.command.name).toBe(sampleEntry.name);
   });
 
-  it('should write to stderr and set exitCode=1 for unknown command name', () => {
+  it('should write to stderr and set exitCode=2 for unknown command name', () => {
     runHelp(['xyz']);
     expect(errorSpy).toHaveBeenCalledTimes(1);
-    expect(errorSpy.mock.calls[0][0] as string).toContain('Unknown command: xyz');
-    expect(process.exitCode).toBe(1);
+    expect(errorSpy.mock.calls[0][0]).toBe(
+      '[UNKNOWN_COMMAND] Unknown command: xyz. Run `manta help` to see available commands.',
+    );
+    expect(process.exitCode).toBe(2);
   });
 });
+
+// 예시 입력은 shell 명령이므로 큰따옴표 인자("Fix OAuth login")를 한 토큰으로 다룬다.
+function tokenizeExampleInput(input: string): string[] {
+  const tokens = input.match(/"[^"]*"|\S+/g) ?? [];
+  return tokens.map((token) => token.replace(/^"|"$/g, ''));
+}
 
 describe('registry example inputs', () => {
   it('should parse every example input via Commander without error', () => {
     for (const entry of commandHelpEntries) {
       for (const example of entry.examples) {
-        const tokens = example.input.split(/\s+/).slice(1);
+        const tokens = tokenizeExampleInput(example.input).slice(1);
         const program = new Command();
         program.exitOverride();
 

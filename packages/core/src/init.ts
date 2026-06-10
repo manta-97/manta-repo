@@ -3,7 +3,8 @@ import * as fs from 'node:fs/promises';
 import { InitResult } from './types';
 import { MantaErrors } from './errors';
 import { registerProject } from './project-registry';
-import { MANTA_MARKER_DIR, TASKS_DIR, DEFAULT_TASK_DIR_NAME } from './constants';
+import { createProjectAnchor, writeProjectAnchor } from './project-anchor';
+import { MANTA_MARKER_DIR, TASKS_DIR, DEFAULT_TASK_DIR_NAME, TASK_STATUSES } from './constants';
 
 /**
  * 사용자 입력 경로를 절대 경로로 변환한다.
@@ -17,6 +18,30 @@ export function resolveTaskDirPath(inputPath: string | undefined, cwd: string): 
     return path.resolve(cwd, DEFAULT_TASK_DIR_NAME);
   }
   return path.resolve(cwd, inputPath);
+}
+
+/**
+ * anchor에는 프로젝트 루트 기준 상대 경로를 기록한다.
+ * 프로젝트 폴더가 통째로 이동해도 anchor가 task 디렉토리를 계속 가리키게 하기 위함이다.
+ * 루트 밖의 경로는 상대화할 수 없으므로 절대 경로를 그대로 둔다.
+ */
+function taskDirForAnchor(projectRoot: string, taskDirPath: string): string {
+  const relativePath = path.relative(projectRoot, taskDirPath);
+  return relativePath.startsWith('..') ? taskDirPath : relativePath;
+}
+
+/**
+ * `.gitkeep`은 빈 상태 폴더를 git이 추적하게 만드는 관행적 파일이다.
+ * 이미 존재하면 건드리지 않는다 — 사용자가 내용을 채워 썼을 수 있다.
+ */
+async function createGitkeepIfMissing(dirPath: string): Promise<void> {
+  try {
+    await fs.writeFile(path.join(dirPath, '.gitkeep'), '', { flag: 'wx' });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
+      throw error;
+    }
+  }
 }
 
 export async function initializeMantaProject(
@@ -44,18 +69,31 @@ export async function initializeMantaProject(
 
     await fs.mkdir(markerDir, { recursive: true });
 
+    // toISOString() → '2026-04-11T12:34:56.789Z', slice(0,10) → '2026-04-11'
+    const today = new Date().toISOString().slice(0, 10);
+
+    const anchor = createProjectAnchor(taskDirForAnchor(projectRoot, taskDirPath), today);
+    await writeProjectAnchor(projectRoot, anchor);
+
+    // 세 상태 폴더를 init 시점에 전부 만든다 (eager).
+    // "in-progress/는 init 이후 언제나 존재한다"가 시스템 불변식이 되어,
+    // 하류 명령어들이 '폴더 없음 = 초기화 안 됨'의 모호함을 떠안지 않는다.
     const tasksPath = path.join(taskDirPath, TASKS_DIR);
-    await fs.mkdir(tasksPath, { recursive: true });
+    for (const status of TASK_STATUSES) {
+      const statusDirPath = path.join(tasksPath, status);
+      await fs.mkdir(statusDirPath, { recursive: true });
+      await createGitkeepIfMissing(statusDirPath);
+    }
 
     await registerProject(globalDataDir, {
+      projectId: anchor.projectId,
       name: path.basename(projectRoot),
       projectRoot,
       taskDirName: path.basename(taskDirPath),
-      // toISOString() → '2026-04-11T12:34:56.789Z', slice(0,10) → '2026-04-11'
-      registeredAt: new Date().toISOString().slice(0, 10),
+      registeredAt: today,
     });
 
-    return { ok: true, projectRoot, taskDirPath, created: true };
+    return { ok: true, projectRoot, taskDirPath, projectId: anchor.projectId, created: true };
   } catch (error) {
     // EACCES — 디렉토리 생성 권한이 없는 경우.
     if (error instanceof Error && 'code' in error && error.code === 'EACCES') {
