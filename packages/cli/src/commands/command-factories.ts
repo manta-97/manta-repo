@@ -6,6 +6,7 @@ import { createShowCommand } from './show';
 import { createStartCommand, createDoneCommand } from './move-task-command';
 import { createEditCommand } from './edit';
 import { createSearchCommand } from './search';
+import { createIndexCommand } from './index-command';
 import { createHelpCommand } from './help';
 
 export const commandFactories: Record<string, () => Command> = {
@@ -17,5 +18,6 @@ export const commandFactories: Record<string, () => Command> = {
   done: createDoneCommand,
   edit: createEditCommand,
   search: createSearchCommand,
+  index: createIndexCommand,
   help: createHelpCommand,
 };

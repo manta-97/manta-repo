@@ -71,6 +71,14 @@ export const commandHelpEntries: readonly CommandHelpEntry[] = [
     ],
   },
   {
+    name: 'index',
+    summary: 'Rebuild or check the root SQLite index (~/.manta/manta.sqlite)',
+    usage: 'manta index <action>',
+    args: [{ name: 'action', required: true, description: 'rebuild | check' }],
+    options: [],
+    examples: [{ input: 'manta index rebuild' }, { input: 'manta index check' }],
+  },
+  {
     name: 'help',
     summary: 'Show command list or details',
     usage: 'manta help [command]',

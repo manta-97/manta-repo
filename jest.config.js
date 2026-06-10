@@ -15,5 +15,12 @@ module.exports = {
         '^.+\\.ts$': ['ts-jest', { tsconfig: 'packages/cli/tsconfig.test.json' }],
       },
     },
+    {
+      displayName: 'engine',
+      testMatch: ['<rootDir>/packages/engine/src/**/*.test.ts'],
+      transform: {
+        '^.+\\.ts$': ['ts-jest', { tsconfig: 'packages/engine/tsconfig.test.json' }],
+      },
+    },
   ],
 };
