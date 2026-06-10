@@ -34,7 +34,7 @@ npm run --workspace packages/desktop start
 packages/
 ├── core/      # @manta/core — 파일 계약 소유자: anchor, task repository, 상태 모델 (no runtime deps)
 ├── engine/    # @manta/engine — root SQLite 운영 엔진 (better-sqlite3), ~/.manta/manta.sqlite
-├── cli/       # @manta/cli — CLI adapter (commander, chalk), 10개 명령
+├── cli/       # @manta/cli — CLI adapter (commander, chalk), 13개 명령
 └── desktop/   # @manta/desktop — Electron Local Workspace (forge + vite + react + tailwind)
 ```
 
@@ -50,6 +50,9 @@ packages/
 - **CLI 오류 정책**: exit 0(성공/no-op) / 1(runtime) / 2(usage), stderr `[CODE] message` 한 줄
 - **글로벌 데이터**: `~/.manta/` (projects.json, manta.sqlite). `MANTA_HOME` env로 오버라이드 (테스트 격리)
 - **help registry가 source of truth**: 구현된 명령만 `commandHelpEntries`에 등록한다
+- **context는 all-or-nothing**: `manta context`와 GUI Copy AI Context는 같은
+  `buildContextDocument()`를 쓰고, 조회가 하나라도 실패하면 출력하지 않는다
+- **import/export**: `manta-tasks` JSON 번들 v1. import는 검증 후 일괄 쓰기(부분 import 없음), 새 id 재채번
 
 ## Git Conventions
 
