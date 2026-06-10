@@ -15,6 +15,11 @@ const mantaApi: MantaApi = {
     ipcRenderer.invoke(MANTA_IPC_CHANNELS.addTask, projectRoot, title),
   moveTask: (projectRoot: string, taskId: string, targetStatus: TaskStatus) =>
     ipcRenderer.invoke(MANTA_IPC_CHANNELS.moveTask, projectRoot, taskId, targetStatus),
+  saveTaskBody: (projectRoot: string, taskId: string, newBody: string) =>
+    ipcRenderer.invoke(MANTA_IPC_CHANNELS.saveTaskBody, projectRoot, taskId, newBody),
+  buildContext: (projectRoot: string, taskIds: string[]) =>
+    ipcRenderer.invoke(MANTA_IPC_CHANNELS.buildContext, projectRoot, taskIds),
+  copyToClipboard: (text: string) => ipcRenderer.invoke(MANTA_IPC_CHANNELS.copyToClipboard, text),
 };
 
 contextBridge.exposeInMainWorld('manta', mantaApi);

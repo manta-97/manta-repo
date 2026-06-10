@@ -18,6 +18,16 @@ export function useMantaWorkspace() {
   const [tasks, setTasks] = useState<TaskListEntry[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [error, setError] = useState<WorkspaceError | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  // 일시 알림 ("Saved", "Copied")은 잠깐 보여주고 스스로 사라진다.
+  useEffect(() => {
+    if (notice === null) {
+      return;
+    }
+    const dismissTimer = setTimeout(() => setNotice(null), 2500);
+    return () => clearTimeout(dismissTimer);
+  }, [notice]);
 
   const reportFailure = useCallback((failure: { error: string; message: string }) => {
     setError({ code: failure.error, message: failure.message });
@@ -114,6 +124,39 @@ export function useMantaWorkspace() {
     [selectedProjectRoot, selectedTask, refreshTasks, selectTask, reportFailure],
   );
 
+  const saveSelectedTaskBody = useCallback(
+    async (newBody: string): Promise<boolean> => {
+      if (selectedProjectRoot === null || selectedTask === null) {
+        return false;
+      }
+      const result = await window.manta.saveTaskBody(selectedProjectRoot, selectedTask.id, newBody);
+      if (!result.ok) {
+        reportFailure(result);
+        return false;
+      }
+      setError(null);
+      setSelectedTask(result.task);
+      setNotice(`Saved ${result.task.id}`);
+      await refreshTasks(selectedProjectRoot);
+      return true;
+    },
+    [selectedProjectRoot, selectedTask, refreshTasks, reportFailure],
+  );
+
+  const copySelectedTaskContext = useCallback(async () => {
+    if (selectedProjectRoot === null || selectedTask === null) {
+      return;
+    }
+    const result = await window.manta.buildContext(selectedProjectRoot, [selectedTask.id]);
+    if (!result.ok) {
+      reportFailure(result);
+      return;
+    }
+    await window.manta.copyToClipboard(result.document);
+    setError(null);
+    setNotice(`AI context for ${selectedTask.id} copied to clipboard`);
+  }, [selectedProjectRoot, selectedTask, reportFailure]);
+
   return {
     projects,
     selectedProjectRoot,
@@ -123,6 +166,9 @@ export function useMantaWorkspace() {
     selectTask,
     addTask,
     moveSelectedTask,
+    saveSelectedTaskBody,
+    copySelectedTaskContext,
     error,
+    notice,
   };
 }

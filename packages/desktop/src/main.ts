@@ -1,7 +1,8 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, clipboard, ipcMain } from 'electron';
 import path from 'node:path';
 import * as fs from 'node:fs/promises';
 import {
+  buildContextDocument,
   createTask,
   getMantaHomeDir,
   listTasks,
@@ -9,17 +10,21 @@ import {
   readProjectRegistry,
   readTask,
   resolveTasksRootPath,
+  updateTaskBody,
   MANTA_MARKER_DIR,
+  Task,
   TaskStatus,
 } from '@manta/core';
 import {
   AddTaskResult,
+  BuildContextResult,
   ListProjectsResult,
   ListTasksResult,
   MANTA_IPC_CHANNELS,
   MoveTaskResult,
   ProjectSummary,
   ReadTaskResult,
+  SaveTaskBodyResult,
 } from './shared/manta-api';
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
@@ -105,6 +110,48 @@ function registerMantaIpcHandlers(): void {
       }
     },
   );
+
+  ipcMain.handle(
+    MANTA_IPC_CHANNELS.saveTaskBody,
+    async (
+      _event,
+      projectRoot: string,
+      taskId: string,
+      newBody: string,
+    ): Promise<SaveTaskBodyResult> => {
+      try {
+        const tasksRootPath = await resolveTasksRootPath(projectRoot);
+        return await updateTaskBody(tasksRootPath, taskId, newBody);
+      } catch (error) {
+        return failureFromError(error);
+      }
+    },
+  );
+
+  ipcMain.handle(
+    MANTA_IPC_CHANNELS.buildContext,
+    async (_event, projectRoot: string, taskIds: string[]): Promise<BuildContextResult> => {
+      try {
+        const tasksRootPath = await resolveTasksRootPath(projectRoot);
+        // CLI의 context와 같은 all-or-nothing 계약 — partial context는 만들지 않는다.
+        const tasks: Task[] = [];
+        for (const taskId of taskIds) {
+          const result = await readTask(tasksRootPath, taskId);
+          if (!result.ok) {
+            return result;
+          }
+          tasks.push(result.task);
+        }
+        return { ok: true, document: buildContextDocument(tasks) };
+      } catch (error) {
+        return failureFromError(error);
+      }
+    },
+  );
+
+  ipcMain.handle(MANTA_IPC_CHANNELS.copyToClipboard, (_event, text: string) => {
+    clipboard.writeText(text);
+  });
 }
 
 const createWindow = () => {

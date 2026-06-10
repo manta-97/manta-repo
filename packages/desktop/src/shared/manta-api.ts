@@ -27,6 +27,8 @@ export type AddTaskResult = { ok: true; task: Task } | MantaFailure;
 export type MoveTaskResult =
   | { ok: true; id: string; from: TaskStatus; to: TaskStatus; moved: boolean }
   | MantaFailure;
+export type SaveTaskBodyResult = { ok: true; task: Task } | MantaFailure;
+export type BuildContextResult = { ok: true; document: string } | MantaFailure;
 
 export const MANTA_IPC_CHANNELS = {
   listProjects: 'manta:list-projects',
@@ -34,6 +36,9 @@ export const MANTA_IPC_CHANNELS = {
   readTask: 'manta:read-task',
   addTask: 'manta:add-task',
   moveTask: 'manta:move-task',
+  saveTaskBody: 'manta:save-task-body',
+  buildContext: 'manta:build-context',
+  copyToClipboard: 'manta:copy-to-clipboard',
 } as const;
 
 export interface MantaApi {
@@ -42,6 +47,10 @@ export interface MantaApi {
   readTask(projectRoot: string, taskId: string): Promise<ReadTaskResult>;
   addTask(projectRoot: string, title: string): Promise<AddTaskResult>;
   moveTask(projectRoot: string, taskId: string, targetStatus: TaskStatus): Promise<MoveTaskResult>;
+  saveTaskBody(projectRoot: string, taskId: string, newBody: string): Promise<SaveTaskBodyResult>;
+  buildContext(projectRoot: string, taskIds: string[]): Promise<BuildContextResult>;
+  /** renderer의 navigator.clipboard는 포커스/권한 조건이 있어 main의 clipboard를 쓴다. */
+  copyToClipboard(text: string): Promise<void>;
 }
 
 declare global {
