@@ -3,10 +3,10 @@
 ## Commands
 
 ```bash
-# Build all packages (order matters: core first)
+# Build all packages (order matters: core → engine → cli)
 npm run build
 
-# Run tests
+# Run tests (core / cli / engine jest projects)
 npm test
 
 # Watch mode
@@ -22,20 +22,34 @@ npm run --workspace packages/cli dev
 
 # Run CLI directly
 node packages/cli/dist/index.js
+
+# Desktop (Electron)
+npm run --workspace packages/desktop typecheck
+npm run --workspace packages/desktop start
 ```
 
 ## Architecture
 
 ```
 packages/
-├── core/    # @manta/core — task CRUD, file I/O, state management (no runtime deps)
-└── cli/     # @manta/cli — CLI interface (commander, chalk, ora)
+├── core/      # @manta/core — 파일 계약 소유자: anchor, task repository, 상태 모델 (no runtime deps)
+├── engine/    # @manta/engine — root SQLite 운영 엔진 (better-sqlite3), ~/.manta/manta.sqlite
+├── cli/       # @manta/cli — CLI adapter (commander, chalk), 10개 명령
+└── desktop/   # @manta/desktop — Electron Local Workspace (forge + vite + react + tailwind)
 ```
+
+의존 방향: `cli → engine → core`, `desktop → core`. core는 누구도 모른다.
 
 ### Key Decisions
 - **TypeScript + CommonJS**: `module: node16`, source uses `import`, compiled output is CJS
-- **Monorepo**: npm workspaces, `@manta/core` is shared by CLI and future Electron app
-- **@manta/core has zero runtime dependencies**: Node built-ins only
+  - 예외: desktop은 Vite 번들이므로 `moduleResolution: bundler`, noEmit typecheck
+- **Monorepo**: npm workspaces. `@manta/core`가 파일 계약을 소유하므로 CLI/GUI 동작이 갈라질 수 없다
+- **@manta/core has zero runtime dependencies**: Node built-ins only.
+  SQLite처럼 무거운 의존성은 `@manta/engine` 같은 별도 패키지(adapter 경계)에 둔다
+- **상태는 폴더다**: `tasks/{todo,in-progress,done}/task-N.md`. frontmatter는 id/title/created 3필드
+- **CLI 오류 정책**: exit 0(성공/no-op) / 1(runtime) / 2(usage), stderr `[CODE] message` 한 줄
+- **글로벌 데이터**: `~/.manta/` (projects.json, manta.sqlite). `MANTA_HOME` env로 오버라이드 (테스트 격리)
+- **help registry가 source of truth**: 구현된 명령만 `commandHelpEntries`에 등록한다
 
 ## Git Conventions
 
