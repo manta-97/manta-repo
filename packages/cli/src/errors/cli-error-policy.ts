@@ -23,7 +23,9 @@ export interface CliTextError {
 const ANSI_ESCAPE_PATTERN = /\x1B\[[0-?]*[ -/]*[@-~]/g;
 // eslint-disable-next-line no-control-regex
 const CONTROL_CHARACTER_PATTERN = /[\x00-\x1F\x7F]/g;
-const MAX_RENDERED_VALUE_LENGTH = 120;
+// 절단 한도는 로그 hygiene용이다. RUNTIME_FAILURE 메시지에는 파일 경로처럼
+// 사용자가 그대로 복사해 써야 하는 값이 들어가므로 너무 짧으면 안 된다.
+const MAX_RENDERED_VALUE_LENGTH = 300;
 
 // 사용자 입력이 stderr에 그대로 들어가면 newline/ANSI escape로 로그를 속일 수 있다.
 // 오류 메시지에 echo되는 값은 한 줄짜리 printable string으로 정규화한다.

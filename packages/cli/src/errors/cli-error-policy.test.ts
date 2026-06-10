@@ -95,9 +95,9 @@ describe('cli error policy', () => {
   });
 
   it('should truncate very long user-controlled values', () => {
-    const sanitizedValue = sanitizeCliErrorValue('a'.repeat(200));
+    const sanitizedValue = sanitizeCliErrorValue('a'.repeat(500));
 
-    expect(sanitizedValue).toHaveLength(123);
+    expect(sanitizedValue).toHaveLength(303);
     expect(sanitizedValue.endsWith('...')).toBe(true);
   });
 });
