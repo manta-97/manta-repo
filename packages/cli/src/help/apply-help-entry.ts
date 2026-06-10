@@ -6,7 +6,8 @@ export function applyHelpEntryToCommand(command: Command, entry: CommandHelpEntr
   command.description(entry.summary);
 
   for (const arg of entry.args) {
-    const argSpec = arg.required ? `<${arg.name}>` : `[${arg.name}]`;
+    const argName = arg.variadic ? `${arg.name}...` : arg.name;
+    const argSpec = arg.required ? `<${argName}>` : `[${argName}]`;
     command.argument(argSpec, arg.description);
   }
 

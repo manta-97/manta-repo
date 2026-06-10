@@ -35,6 +35,10 @@ export const MantaErrors = {
     error: 'TASK_FILE_MALFORMED' as const,
     message: `Task file malformed: ${filePath} (${reason})`,
   }),
+  IMPORT_BUNDLE_INVALID: (reason: string) => ({
+    error: 'IMPORT_BUNDLE_INVALID' as const,
+    message: `Import bundle invalid: ${reason}`,
+  }),
 } as const;
 
 export type MantaErrorCode = keyof typeof MantaErrors;

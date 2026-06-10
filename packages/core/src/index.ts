@@ -23,7 +23,26 @@ export {
   listTasks,
   moveTask,
   searchTasks,
+  updateTaskBody,
 } from './task-repository';
+export { buildContextDocument } from './build-context';
+export type { BuildContextOptions } from './build-context';
+export { splitBodyIntoSections, sectionKeepPriority } from './task-sections';
+export type { TaskBodySection } from './task-sections';
+export {
+  exportTasks,
+  importTasks,
+  EXPORT_BUNDLE_FORMAT,
+  EXPORT_BUNDLE_VERSION,
+} from './export-import';
+export type {
+  TaskExportBundle,
+  ExportedTask,
+  ExportTasksResult,
+  SkippedExportTask,
+  ImportTasksResult,
+  ImportedTaskMapping,
+} from './export-import';
 export {
   TASK_STATUSES,
   MANTA_MARKER_DIR,

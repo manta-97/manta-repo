@@ -71,6 +71,40 @@ export const commandHelpEntries: readonly CommandHelpEntry[] = [
     ],
   },
   {
+    name: 'context',
+    summary: 'Assemble tasks into an AI-ready context document',
+    usage: 'manta context <id...> [--max-chars <n>]',
+    args: [
+      {
+        name: 'id',
+        required: true,
+        variadic: true,
+        description: 'one or more task ids (e.g. task-1 task-4)',
+      },
+    ],
+    options: [{ flag: '--max-chars <n>', description: 'limit output length to n characters' }],
+    examples: [
+      { input: 'manta context task-1' },
+      { input: 'manta context task-1 task-4 --max-chars 6000' },
+    ],
+  },
+  {
+    name: 'export',
+    summary: 'Export all tasks as a JSON bundle to stdout',
+    usage: 'manta export',
+    args: [],
+    options: [],
+    examples: [{ input: 'manta export' }],
+  },
+  {
+    name: 'import',
+    summary: 'Import tasks from an exported JSON bundle',
+    usage: 'manta import <file>',
+    args: [{ name: 'file', required: true, description: 'path to a manta export JSON file' }],
+    options: [],
+    examples: [{ input: 'manta import tasks.json' }],
+  },
+  {
     name: 'index',
     summary: 'Rebuild or check the root SQLite index (~/.manta/manta.sqlite)',
     usage: 'manta index <action>',

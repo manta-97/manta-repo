@@ -4,6 +4,8 @@ export interface CommandArg {
   name: string;
   required: boolean;
   description: string;
+  /** `manta context <id...>`처럼 여러 값을 받는 인자. */
+  variadic?: boolean;
 }
 
 export interface CommandOption {

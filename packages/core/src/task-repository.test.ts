@@ -13,6 +13,7 @@ import {
   moveTask,
   readTask,
   searchTasks,
+  updateTaskBody,
 } from './task-repository';
 
 describe('isValidTaskId', () => {
@@ -234,6 +235,48 @@ describe('task repository', () => {
       const result = await moveTask(tasksRootPath, 'task-9', 'done');
 
       expect(result).toMatchObject({ ok: false, error: 'TASK_NOT_FOUND' });
+    });
+  });
+
+  describe('updateTaskBody', () => {
+    it('should replace the body while preserving frontmatter', async () => {
+      await writeTaskFile('in-progress', 'task-1', 'keep this title', 'old body\n');
+
+      const result = await updateTaskBody(tasksRootPath, 'task-1', 'new body\n');
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.task.title).toBe('keep this title');
+        expect(result.task.body).toBe('new body\n');
+      }
+
+      const reread = await readTask(tasksRootPath, 'task-1');
+      expect(reread.ok).toBe(true);
+      if (reread.ok) {
+        expect(reread.task.body).toBe('new body\n');
+        expect(reread.task.created).toBe('2026-06-10');
+      }
+    });
+
+    it('should clear the body when given an empty string', async () => {
+      await writeTaskFile('todo', 'task-1', 't', 'old body\n');
+
+      const result = await updateTaskBody(tasksRootPath, 'task-1', '');
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.task.body).toBe('');
+      }
+    });
+
+    it('should refuse to overwrite a malformed file', async () => {
+      await fs.writeFile(path.join(tasksRootPath, 'todo', 'task-1.md'), 'broken');
+
+      const result = await updateTaskBody(tasksRootPath, 'task-1', 'new body');
+
+      expect(result).toMatchObject({ ok: false, error: 'TASK_FILE_MALFORMED' });
+      const untouched = await fs.readFile(path.join(tasksRootPath, 'todo', 'task-1.md'), 'utf-8');
+      expect(untouched).toBe('broken');
     });
   });
 

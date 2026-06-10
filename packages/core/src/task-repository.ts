@@ -255,6 +255,48 @@ export async function moveTask(
 }
 
 /**
+ * task 본문을 교체한다 (frontmatter는 보존). GUI의 명시적 save가 이 함수를 쓴다.
+ * 쓰기 전에 기존 파일을 엄격하게 읽으므로(frontmatter 검증 포함),
+ * 깨진 파일을 모르고 덮어쓰는 일이 없다.
+ */
+export async function updateTaskBody(
+  tasksRootPath: string,
+  rawId: string,
+  newBody: string,
+): Promise<TaskReadResult> {
+  const readResult = await readTask(tasksRootPath, rawId);
+  if (!readResult.ok) {
+    return readResult;
+  }
+  const { task } = readResult;
+
+  const fileContent = serializeTaskFileContent(
+    { id: task.id, title: task.title, created: task.created },
+    newBody,
+  );
+
+  try {
+    await fs.writeFile(task.filePath, fileContent);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'EACCES') {
+      return { ok: false, ...MantaErrors.PERMISSION_DENIED(task.filePath) };
+    }
+    return {
+      ok: false,
+      error: 'UNKNOWN',
+      message: error instanceof Error ? error.message : String(error),
+    };
+  }
+
+  // 직렬화가 정규화한 본문(개행 등)을 그대로 돌려준다 — 파일과 반환값이 항상 일치.
+  const parseResult = parseTaskFileContent(fileContent);
+  return {
+    ok: true,
+    task: { ...task, body: parseResult.ok ? parseResult.body : newBody },
+  };
+}
+
+/**
  * title과 body를 대상으로 한 단순 텍스트 검색 (대소문자 무시).
  * title 매치는 snippet 없이, body 매치는 처음 매치된 줄을 snippet으로 돌려준다.
  * 깨진 파일은 건너뛴다 — 검색 결과의 신뢰성이 우선이다.
