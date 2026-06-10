@@ -1,14 +1,16 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src",
-    "composite": true,
+    "rootDir": ".",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
     "types": ["node"],
-    "jsx": "react-jsx"
+    "noEmit": true,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false
   },
-  "include": ["src"],
-  "references": [
-    { "path": "../core" }
-  ]
+  "include": ["src", "forge.config.ts", "vite.main.config.ts", "vite.preload.config.ts", "vite.renderer.config.ts"]
 }
