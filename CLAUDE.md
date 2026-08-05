@@ -53,10 +53,11 @@ manta-repo/
 - **`internal/core`는 가능한 한 stdlib 위주**: 파일 계약·파싱·상태 모델만 둔다
 - **SQLite 같은 무거운 의존성은 `internal/engine`**: core의 경계를 깨지 않는다
 - **상태는 폴더다**: `tasks/{todo,in-progress,done}/task-N.md`. frontmatter는 id/title/created 3필드
-- **CLI 오류 정책**: exit 0(성공/no-op) / 1(runtime) / 2(usage), stderr `[CODE] message` 한 줄
+- **CLI 종료·출력 (정석)**: exit 0 성공·no-op / 1 실행 실패 / 2 사용법 오류.
+  stdout=결과 데이터, stderr=에러·경고·안내. 사람용 `Error: ...` 문장. `[CODE]` 접두 프로토콜 없음
 - **글로벌 데이터**: `~/.manta/` (projects.json, manta.sqlite). `MANTA_HOME` env로 오버라이드 (테스트 격리)
-- **help registry가 source of truth**: 구현된 명령만 help에 등록한다
-- **context는 all-or-nothing**: CLI `manta context`와 GUI Copy AI Context는 같은 core 함수를 쓰고, 조회가 하나라도 실패하면 출력하지 않는다
+- **help**: `--help` / `help` / `--version`. 구현된 명령만 노출. Use/Short/Example 충실
+- **context는 all-or-nothing**: CLI `manta context`와 GUI Copy AI Context는 같은 core 함수를 쓰고, 조회가 하나라도 실패하면 결과 데이터를 출력하지 않는다
 - **import/export**: `manta-tasks` JSON 번들 v1. import는 검증 후 일괄 쓰기(부분 import 없음), 새 id 재채번
 - **GUI는 Wails binding으로 core를 직접 호출**: CLI shell 호출·stdout 파싱 금지. frontend는 표시 계층일 뿐 source of truth가 아니다
 

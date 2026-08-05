@@ -29,6 +29,7 @@ cd desktop && wails build
 - Prefer stdlib in `core`; put SQLite and heavy deps in `engine`
 - Status is folder location (`todo` / `in-progress` / `done`), never a frontmatter `status` field
 - GUI must call Go bindings / core APIs — never shell out to CLI or parse CLI stdout
+- CLI exit: 0 success/no-op, 1 failure, 2 usage; stdout = data, stderr = human errors (no `[CODE]` protocol)
 
 ## Behavior
 - Follow YAGNI

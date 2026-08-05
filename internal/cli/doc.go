@@ -1,5 +1,6 @@
-// Package cli is the cobra (or equivalent) adapter over core/engine.
+// Package cli is the cobra adapter over core/engine.
 //
-// Exit policy: 0 success/no-op, 1 runtime failure, 2 usage error.
-// Runtime errors print a single stderr line: [CODE] message
+// Exit policy (Unix-style): 0 success/no-op, 1 failure, 2 usage error.
+// stdout carries result data; stderr carries human-readable errors and warnings.
+// No machine [CODE] prefix protocol on stderr.
 package cli
