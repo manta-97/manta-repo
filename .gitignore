@@ -1,7 +1,26 @@
+# Binaries
+bin/
+*.exe
+*.test
+*.out
+
+# Go
+vendor/
+
+# Wails / frontend (when present)
+desktop/build/
+desktop/frontend/dist/
+desktop/frontend/node_modules/
 node_modules/
 dist/
 .vite/
 out/
-*.js.map
+
+# OS / IDE
 .DS_Store
-*.tsbuildinfo
+.idea/
+*.iml
+
+# Local env
+.env
+.env.*
